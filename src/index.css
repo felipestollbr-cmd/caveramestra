@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-caverna-bg: #09090b; /* Very dark zinc */
+  --color-caverna-card: #141417; /* Elevated zinc/lead */
+  --color-caverna-accent: #d4af37; /* Dark Gold */
+  --color-caverna-accent-light: #f3ce5e; /* Light Gold */
+  --color-caverna-green: #112a22; /* Emerald dark */
+  --color-caverna-green-text: #10b981;
+  --color-caverna-text: #ffffff;
+  --color-caverna-muted: #a1a1aa;
+}
+
+body {
+  background-color: var(--color-caverna-bg);
+  color: var(--color-caverna-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.03), transparent 400px);
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #3f3f46;
+  border-radius: 10px;
+}
