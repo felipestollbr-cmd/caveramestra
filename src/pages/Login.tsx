@@ -11,6 +11,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
+  const [churchCode, setChurchCode] = useState('');
+  const [isChurchSignUp, setIsChurchSignUp] = useState(false);
+  const [churchName, setChurchName] = useState('');
 
   const handleOAuth = async (provider: 'google' | 'apple') => {
      try {
@@ -43,8 +46,70 @@ const Login = () => {
            return;
         }
 
-        const { error: signUpError } = await supabase.auth.signUp({ email, password });
+        let churchId = '';
+        let code = '';
+
+        if (isChurchSignUp) {
+          // Cadastro de igreja: gerar código único e criar igreja
+          if (!churchName) {
+            setError('Informe o nome da igreja.');
+            setLoading(false);
+            return;
+          }
+          // Gera código aleatório de 6 caracteres
+          code = Math.random().toString(36).substring(2, 8).toUpperCase();
+          const { data: church, error: churchError } = await supabase
+            .from('churches')
+            .insert({ name: churchName, code })
+            .select('id, code')
+            .single();
+          if (churchError || !church) {
+            setError('Erro ao criar igreja. Tente novamente.');
+            setLoading(false);
+            return;
+          }
+          churchId = church.id;
+        } else {
+          // Cadastro de membro: precisa do código da igreja
+          if (!churchCode) {
+            setError('Informe o código da igreja para se cadastrar.');
+            setLoading(false);
+            return;
+          }
+          // Busca a igreja pelo código
+          const { data: church, error: churchError } = await supabase
+            .from('churches')
+            .select('id')
+            .eq('code', churchCode)
+            .single();
+          if (churchError || !church) {
+            setError('Código da igreja inválido. Peça o código correto ao administrador.');
+            setLoading(false);
+            return;
+          }
+          churchId = church.id;
+        }
+
+        // Cria usuário no Supabase Auth
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
+
+        // Cria o perfil do usuário já vinculado à igreja
+        if (signUpData.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({ id: signUpData.user.id, church_id: churchId, email });
+          if (profileError) {
+            setError('Erro ao criar perfil do membro. Tente novamente.');
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Se cadastrou igreja, mostra o código gerado
+        if (isChurchSignUp && code) {
+          alert(`Igreja cadastrada com sucesso! Código: ${code}\nCompartilhe este código com seus membros para que possam se cadastrar.`);
+        }
         navigate('/dashboard');
       } else {
         // Fallback for Admin Test without Supabase configured
@@ -98,6 +163,51 @@ const Login = () => {
           )}
 
           <div className="space-y-4">
+            {isSignUp && (
+              <>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-xl font-semibold border transition-all ${isChurchSignUp ? 'bg-caverna-accent text-zinc-900 border-caverna-accent' : 'bg-zinc-900 text-white border-white/10'}`}
+                    onClick={() => setIsChurchSignUp(true)}
+                  >Cadastrar Igreja</button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-xl font-semibold border transition-all ${!isChurchSignUp ? 'bg-caverna-accent text-zinc-900 border-caverna-accent' : 'bg-zinc-900 text-white border-white/10'}`}
+                    onClick={() => setIsChurchSignUp(false)}
+                  >Cadastrar Membro</button>
+                </div>
+                {isChurchSignUp ? (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Nome da Igreja</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={churchName}
+                        onChange={e => setChurchName(e.target.value)}
+                        className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-4 pl-4 pr-4 text-white focus:outline-none focus:border-caverna-accent focus:ring-1 focus:ring-caverna-accent transition-all"
+                        placeholder="Ex: Igreja Central"
+                        required
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Código da Igreja</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={churchCode}
+                        onChange={e => setChurchCode(e.target.value)}
+                        className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-4 pl-4 pr-4 text-white focus:outline-none focus:border-caverna-accent focus:ring-1 focus:ring-caverna-accent transition-all"
+                        placeholder="Ex: ABC123"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-2">Email</label>
               <div className="relative">
@@ -112,7 +222,6 @@ const Login = () => {
                 />
               </div>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-2">Senha</label>
               <div className="relative">
