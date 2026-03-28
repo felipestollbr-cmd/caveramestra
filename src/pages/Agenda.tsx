@@ -1,8 +1,44 @@
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Clock, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../lib/supabase';
+// import { fetchAgendaEvents, updateAgendaEvent } from '../services/agendaService'; // REMOVED
 import AgendaModal from '../components/AgendaModal';
+
+// --- Mock Data and Functions --- >
+const mockEvents = [
+  {
+    id: '1',
+    title: 'Reunião de Alinhamento',
+    schedule_time: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(),
+    duration: 1,
+    category: 'Ritual',
+  },
+  {
+    id: '2',
+    title: 'Treino de Peito e Tríceps',
+    schedule_time: new Date().toISOString(),
+    duration: 1.5,
+    category: 'Treino',
+  },
+    {
+    id: '3',
+    title: 'Almoço com a Equipe',
+    schedule_time: new Date(new Date().setHours(12, 30, 0, 0)).toISOString(),
+    duration: 1,
+    category: 'Refeição',
+  },
+];
+
+const fetchAgendaEvents = async (start: Date, end: Date) => {
+  console.log(`Fetching mock events between ${start} and ${end}`);
+  return new Promise(resolve => setTimeout(() => resolve(mockEvents), 500));
+};
+
+const updateAgendaEvent = async (eventId: string, updates: any) => {
+  console.log(`Updating event ${eventId} with`, updates);
+  return new Promise(resolve => setTimeout(() => resolve({ ...mockEvents.find(e => e.id === eventId), ...updates }), 200));
+};
+// --- End Mock Data and Functions ---
 
 const HOURS = Array.from({ length: 19 }, (_, i) => i + 5); // 05:00 to 23:00
 const DAYS_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
@@ -97,9 +133,7 @@ const Agenda = () => {
 
   const fetchAgenda = async () => {
      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
+        setLoading(true);
         let start = new Date(currentDate);
         let end = new Date(currentDate);
 
@@ -117,13 +151,7 @@ const Agenda = () => {
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 999);
 
-        const { data, error } = await supabase
-          .from('agenda')
-          .select('*')
-          .gte('schedule_time', start.toISOString())
-          .lte('schedule_time', end.toISOString())
-          .order('schedule_time', { ascending: true });
-        if (error) throw error;
+        const data:any = await fetchAgendaEvents(start, end);
 
         // Process data for the grid
         const processed = data.map((item: any) => {
@@ -192,9 +220,9 @@ const Agenda = () => {
     const newDate = new Date(targetDate);
     newDate.setHours(hour, minute, 0, 0);
 
-    const { error } = await supabase.from('agenda').update({ schedule_time: newDate.toISOString() }).eq('id', eventId);
-    if (error) {
-      console.error('Error moving appointment:', error);
+    const result = await updateAgendaEvent(eventId, { schedule_time: newDate.toISOString() });
+    if (!result) {
+      console.error('Error moving appointment');
       return;
     }
     fetchAgenda();
@@ -219,7 +247,7 @@ const Agenda = () => {
 
     const onUp = async () => {
       if (activeResize && resizePreview) {
-        await supabase.from('agenda').update({ duration: resizePreview.duration }).eq('id', activeResize.id);
+        await updateAgendaEvent(activeResize.id, { duration: resizePreview.duration });
         fetchAgenda();
       }
       setActiveResize(null);
@@ -448,8 +476,8 @@ const Agenda = () => {
                      ))}
 
                      {/* Appointments in this day */}
-                     {loading && dayIdx === 3 && (
-                        <div className="absolute inset-0 flex items-center justify-center">
+                     {loading && dayIdx === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-caverna-card/30">
                           <Loader2 className="animate-spin text-caverna-accent" size={32} />
                         </div>
                      )}

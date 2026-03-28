@@ -33,8 +33,8 @@ const Assinatura = () => {
         
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-gradient-to-br from-caverna-accent to-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-caverna-accent/20 border border-white/10">
-            <CaveLogo size={48} className="text-zinc-900" strokeWidth={2.5} />
+          <div className="w-20 h-20 bg-gradient-to-br from-caverna-accent to-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-caverna-accent/20 border border-white/10 p-4">
+            <CaveLogo />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
             Liberte seu <span className="text-caverna-accent">Potencial Mestre</span>
@@ -50,8 +50,8 @@ const Assinatura = () => {
           {/* Plano PIX */}
           <div 
             onClick={() => setMethod('pix')}
-            className={`cursor-pointer bg-zinc-900/80 backdrop-blur-xl p-8 rounded-[32px] border-2 transition-all relative overflow-hidden group ${
-              method === 'pix' ? 'border-caverna-accent shadow-2xl shadow-caverna-accent/10 scale-[1.02]' : 'border-white/5 hover:border-white/20'
+            className={`cursor-pointer bg-caverna-card/80 backdrop-blur-xl p-8 rounded-[32px] border-2 transition-all relative overflow-hidden group ${
+              method === 'pix' ? 'border-caverna-accent shadow-2xl shadow-caverna-accent/10 scale-[1.02]' : 'border-caverna-border hover:border-white/20'
             }`}
           >
             {method === 'pix' && (
@@ -65,7 +65,7 @@ const Assinatura = () => {
             </div>
             <div className="mb-6">
               <span className="text-5xl font-bold text-caverna-accent">R$ 49</span>
-              <span className="text-zinc-500 font-medium">/acesso total</span>
+              <span className="text-caverna-muted font-medium">/acesso total</span>
             </div>
             <ul className="space-y-3 mb-8">
               {['Acesso imediato à plataforma', 'Todos os rituais e treinamentos', 'Networking com a Alcateia', 'Economia e praticidade'].map((item, i) => (
@@ -80,8 +80,8 @@ const Assinatura = () => {
           {/* Plano Parcelado */}
           <div 
             onClick={() => setMethod('card')}
-            className={`cursor-pointer bg-zinc-900/80 backdrop-blur-xl p-8 rounded-[32px] border-2 transition-all relative overflow-hidden group ${
-              method === 'card' ? 'border-caverna-accent shadow-2xl shadow-caverna-accent/10 scale-[1.02]' : 'border-white/5 hover:border-white/20'
+            className={`cursor-pointer bg-caverna-card/80 backdrop-blur-xl p-8 rounded-[32px] border-2 transition-all relative overflow-hidden group ${
+              method === 'card' ? 'border-caverna-accent shadow-2xl shadow-caverna-accent/10 scale-[1.02]' : 'border-caverna-border hover:border-white/20'
             }`}
           >
             <div className="flex items-center gap-3 mb-6">
@@ -97,7 +97,7 @@ const Assinatura = () => {
             <ul className="space-y-3 mb-8">
               {['Acesso imediato à plataforma', 'Todos os rituais e treinamentos', 'Networking com a Alcateia', 'Pague aos poucos'].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-zinc-300 text-sm">
-                  <Check size={18} className="text-white shrink-0 mt-0.5" />
+                  <Check size={18} className="text-caverna-accent shrink-0 mt-0.5" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -111,7 +111,7 @@ const Assinatura = () => {
           <button 
             onClick={handleCheckout}
             disabled={loading}
-            className="w-full bg-caverna-accent hover:bg-amber-400 text-zinc-900 font-bold py-5 px-8 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:shadow-[0_0_50px_rgba(212,175,55,0.5)] active:scale-95 text-lg"
+            className="w-full bg-caverna-accent hover:bg-amber-400 text-zinc-900 font-bold py-5 px-8 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-[0_0_30px_rgba(232,142,10,0.3)] hover:shadow-[0_0_50px_rgba(232,142,10,0.5)] active:scale-95 text-lg"
           >
             {loading ? <Loader2 className="animate-spin" size={24} /> : (
               <>
@@ -122,7 +122,7 @@ const Assinatura = () => {
           </button>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-2">
-            <p className="text-zinc-500 text-sm">Logado como: <strong className="text-zinc-300">{user?.email}</strong></p>
+            <p className="text-caverna-muted text-sm">Logado como: <strong className="text-zinc-300">{user?.email}</strong></p>
             <button onClick={handleLogout} className="text-sm text-caverna-accent hover:underline opacity-80 decoration-caverna-accent/50 underline-offset-4">
               Sair desta conta
             </button>

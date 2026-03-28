@@ -14,26 +14,27 @@ const ProtectedRoute = () => {
     );
   }
 
-  // Se não tem usuário, manda pro login
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Se tem usuário e ele é apenas 'user' mas não pagou, manda pra página de assinar
-  // Administradores passam direto
+  // Se o usuário não for admin, verificamos a assinatura
   if (role !== 'admin' && subscriptionStatus !== 'active') {
-    // Evita redirect loop se já estivermos na página de assinar
     if (location.pathname !== '/assinar') {
       return <Navigate to="/assinar" replace />;
     }
   }
 
-  // Se for uma rota de admin, e não for admin, volta pro dashboard
-  if (['/admin', '/financeiro'].includes(location.pathname) && role !== 'admin') {
+  // Lógica de acesso para rotas de admin
+  if (location.pathname.startsWith('/admin') && role !== 'admin') {
      return <Navigate to="/dashboard" replace />;
   }
 
-  // Tudo certo, renderiza as rotas filhas (Outlet)
+  // Lógica de acesso para a rota financeira
+  if (location.pathname.startsWith('/financeiro') && !['admin', 'financeiro'].includes(role || '')) {
+     return <Navigate to="/dashboard" replace />;
+  }
+
   return <Outlet />;
 };
 

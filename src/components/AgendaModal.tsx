@@ -1,6 +1,24 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+
+// --- Mock Functions to replace agendaService --- >
+const addAgendaEvent = async (event: any) => {
+  console.log('Adding event:', event);
+  return new Promise(resolve => setTimeout(() => resolve({ ...event, id: new Date().toISOString() }), 200));
+};
+
+const updateAgendaEvent = async (eventId: string, updates: any) => {
+  console.log(`Updating event ${eventId} with:`, updates);
+  return new Promise(resolve => setTimeout(() => resolve({ id: eventId, ...updates }), 200));
+};
+
+const deleteAgendaEvent = async (eventId: string) => {
+  console.log(`Deleting event ${eventId}`);
+  return new Promise(resolve => setTimeout(() => resolve(true), 200));
+};
+// --- End Mock Functions ---
+
 
 interface AgendaModalProps {
   isOpen: boolean;
@@ -12,6 +30,7 @@ interface AgendaModalProps {
 }
 
 const AgendaModal = ({ isOpen, onClose, onSuccess, initialDate, initialTime, eventToEdit }: AgendaModalProps) => {
+  const { user } = useAuth();
   const todayIso = new Date().toISOString().split('T')[0];
   const getDefaultTime = () => {
     const now = new Date();
@@ -56,44 +75,35 @@ const AgendaModal = ({ isOpen, onClose, onSuccess, initialDate, initialTime, eve
     setError('');
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Combina a data selecionada com o horário selecionado
       const today = date ? new Date(`${date}T${time}`) : new Date();
       const [hours, minutes] = time.split(':');
       today.setHours(parseInt(hours, 10));
       today.setMinutes(parseInt(minutes, 10));
       today.setSeconds(0);
       
+      const eventData = {
+        title,
+        description,
+        schedule_time: today.toISOString(),
+        category,
+        duration: parseFloat(duration),
+      };
+
       if (isEditing && eventToEdit?.id) {
-        const { error: updateError } = await supabase.from('agenda').update({
-          title,
-          description,
-          schedule_time: today.toISOString(),
-          category,
-          duration: parseFloat(duration),
-        }).eq('id', eventToEdit.id);
-
-        if (updateError) throw updateError;
+        const result = await updateAgendaEvent(eventToEdit.id, eventData);
+        if (!result) throw new Error("Falha ao atualizar o compromisso.");
       } else {
-        const { error: insertError } = await supabase.from('agenda').insert({
-          user_id: user.id,
-          title,
-          description,
-          schedule_time: today.toISOString(),
-          category,
-          duration: parseFloat(duration)
-        });
-
-        if (insertError) throw insertError;
+        const result = await addAgendaEvent({ ...eventData, user_id: user.id });
+        if (!result) throw new Error("Falha ao adicionar o compromisso.");
       }
 
       onSuccess();
       onClose();
     } catch (err: any) {
       console.error(err);
-      setError('Falha ao adicionar compromisso. Tente novamente.');
+      setError(err.message || 'Falha ao salvar o compromisso. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -106,13 +116,13 @@ const AgendaModal = ({ isOpen, onClose, onSuccess, initialDate, initialTime, eve
     setError('');
 
     try {
-      const { error } = await supabase.from('agenda').delete().eq('id', eventToEdit.id);
-      if (error) throw error;
+      const success = await deleteAgendaEvent(eventToEdit.id);
+      if (!success) throw new Error('Falha ao excluir o compromisso.');
       onSuccess();
       onClose();
     } catch (err: any) {
       console.error(err);
-      setError('Falha ao excluir compromisso. Tente novamente.');
+      setError(err.message || 'Falha ao excluir o compromisso. Tente novamente.');
     } finally {
       setLoading(false);
     }

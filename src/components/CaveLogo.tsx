@@ -1,44 +1,11 @@
-import React from 'react';
-
-interface CaveLogoProps {
-  size?: number;
-  className?: string;
-  strokeWidth?: number;
-}
-
-const CaveLogo: React.FC<CaveLogoProps> = ({ size = 24, className = "", strokeWidth = 2 }) => {
+const CaveLogo = () => {
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
+    <svg
+      viewBox="0 0 100 100"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className="text-amber-500 fill-current"
     >
-      {/* Mountain/Cave Shape */}
-      <path 
-        d="M2 21L12 3L22 21" 
-        stroke="currentColor" 
-        strokeWidth={strokeWidth} 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      {/* Entrance Arch */}
-      <path 
-        d="M8 21V17C8 14.7909 9.79086 13 12 13C14.2091 13 16 14.7909 16 17V21" 
-        stroke="currentColor" 
-        strokeWidth={strokeWidth} 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      {/* Base line */}
-      <path 
-        d="M2 21H22" 
-        stroke="currentColor" 
-        strokeWidth={strokeWidth} 
-        strokeLinecap="round" 
-      />
+      <path d="M 20,80 L 50,20 L 80,80 Z" />
     </svg>
   );
 };
